@@ -1,0 +1,30 @@
+{
+	"name" : "sharnw/avored-merchant-warrior",
+	"description" : "AvoRed Laravel E commerce - Merchant Warrior Card Payment Module",
+	"keywords" : [
+		"framework",
+		"avored",
+		"merchant-warrior",
+		"payments"
+	],
+	"license" : "MIT",
+	"authors" : [{
+			"name" : "Sharn White",
+			"website" : "https://github.com/sharnw"
+		}
+	],
+	"type" : "avored-module",
+	"require" : {
+		"php": "^7.2",
+		"avored/module-installer" : "1.*",
+		"avored/framework" : "~3.0"
+	},
+	"autoload" : {
+		"classmap" : [
+			"database/migrations"
+		],
+		"psr-4" : {
+			"Sharnw\\AvoRedMerchantWarrior\\" : "src/"
+		}
+	}
+}
