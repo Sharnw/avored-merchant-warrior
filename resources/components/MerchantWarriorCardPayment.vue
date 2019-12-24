@@ -28,7 +28,7 @@ export default {
             // check if the event was for this payment option
             if (cardPayment.cardPaymentToggled) {
                 // make sure card has been validated
-                if (1==2 && !cardPayment.cardValid) { // TODO: remove debug code
+                if (!cardPayment.cardValid) {
                     // if not let's fire the validation method
                     // at the very least this will show the error messages
                     EventBus.$emit('requestCardValidation');
