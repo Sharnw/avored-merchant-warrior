@@ -147,7 +147,43 @@ class Request
         }
     }
 
-    public function queryCard($transactionID, $transactionRef) {
+    /**
+     * Attempt a 'queryCard' request.
+     *
+     * @param string $transactionID           Transaction identifier returned with initial transaction.
+     * @param string  $transactionReferenceID Merchants transaction identifier returned with initial transaction.
+     * @param Boolean $extended               Request additional customer information.
+     *
+     * @return Response $response
+     */
+    public function queryCard($transactionID, $transactionRef = null, $extended = false) {
+        $hash = md5($this->apiSecret) . $this->merchantUUID . $transactionID;
+        $hash = md5(strtolower($hash));
+
+        $postData = [
+          'method' => 'queryCard',
+          'merchantUUID' => $this->merchantUUID,
+          'apiKey' => $this->apiKey,
+          'transactionID' => $transactionID,
+          'hash' => $hash
+        ];
+        // optional transaction ref param
+        if ($transactionRef != '') $postData['transactionReferenceID'] = $transactionRef;
+        // optional extended param
+        if ($extended != '') $postData['extended'] = $extended;
+
+        $response = $this->postRequest($postData);
+
+        if ($response->getSuccess()) {
+            return $response;
+        } else {
+            Log::error([
+                "Error querying Merchant Warrior card payment",
+                $response->getMessage(),
+            ]);
+
+            throw new GenericApiException();
+        }
     }
 
 }
