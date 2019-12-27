@@ -3,14 +3,17 @@ namespace Sharnw\AvoRedMerchantWarrior;
 
 use Sharnw\AvoRedMerchantWarrior\API\Request;
 use AvoRed\Framework\Database\Contracts\ConfigurationModelInterface;
+use AvoRed\Framework\Support\Contracts\PaymentOptionInterface;
 use Sharnw\AvoRedMerchantWarrior\Models\MerchantWarriorTransaction as Transaction;
+use AvoRed\Framework\Database\Models\Address;
 use AvoRed\Framework\Database\Models\Country;
+use AvoRed\Framework\Database\Models\Order;
 use AvoRed\Framework\Support\Facades\Cart;
 use Illuminate\Support\Facades\Auth;
 use App\User;
 use App;
 
-class CardPayment
+class CardPayment implements PaymentOptionInterface
 {
     
     const CONFIG_KEY = 'payment_merchant_warrior_card_enabled';
@@ -35,6 +38,20 @@ class CardPayment
      * @var string
      */
     protected $view = 'mw-card::index';
+
+    /**
+     * Attached address model for use in payment processing.
+     *
+     * @var \AvoRed\Framework\Database\Models\Address
+     */
+    protected $address;
+
+    /**
+     * Last transaction processed by this payment option.
+     *
+     * @var Transaction
+     */
+    public $lastTransaction;
     
     /**
      * Get Identifier for this Payment Option.
@@ -45,10 +62,32 @@ class CardPayment
     {
         return $this->identifier;
     }
-    
-    public function enable()
-    {
+
+    /**
+     * Check whether this payment option requires attachment of address data.
+     *
+     * @var boolean
+     */
+    public function requiresAddress() {
         return true;
+    }
+
+    /**
+     * Set attached address data.
+     *
+     * @param \AvoRed\Framework\Database\Models\Address
+     */
+    public function setAddress(Address $address) {
+        $this->address = $address;
+    }
+
+    /**
+     * Get attached address data.
+     *
+     * @return \AvoRed\Framework\Database\Models\Address | null
+     */
+    public function address() {
+        return $this->address;
     }
 
     /**
@@ -56,7 +95,7 @@ class CardPayment
      *
      * return Sharnw\AvoRedMerchantWarrior\Models\MerchantWarriorTransaction|null
      */
-    public function process($address = null)
+    public function process()
     {
         // total amount from the shopping cart
         $totalAmount = Cart::total();
@@ -78,6 +117,9 @@ class CardPayment
             'customerEmail' => $user->email,
             'customerIP' => request()->ip()
         ];
+        // grab attached address data
+        $address = $this->address();
+
         if ($address) {
             $customer = array_merge($customer, [
                 'customerCountry' => strtoupper($address->country->code),
@@ -87,6 +129,9 @@ class CardPayment
                 'customerPostCode' => $address->postcode,
                 'customerPhone' => $address->phone,
             ]);
+        } else {
+            Log::error('No billing address provided with payment method.');
+            throw new \Exception('No billing address provided with payment method.');
         }
 
         // card detail fields
@@ -101,11 +146,20 @@ class CardPayment
         $result = $api->processCard($totalAmount, $currencyCode, $customer, $card);
 
         if ($result->getSuccess()) {
-            return Transaction::create([
+            $this->lastTransaction = Transaction::create([
                 'transaction_id' => $result->getTransactionID(),
                 'transaction_ref' => $result->getTransactionRef(),
             ]);
         }
+    }
+
+    /**
+     * Attempts to associate an order with the last transaction.
+     *
+     * @param \AvoRed\Framework\Database\Models\Order $order
+     */
+    public function syncOrder(Order $order) {
+        $this->lastTransaction->order()->associate($order);
     }
 
     /**
