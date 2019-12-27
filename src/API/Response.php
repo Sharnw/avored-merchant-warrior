@@ -88,7 +88,7 @@ class Response
      * @return string|null
      */
     public function getTransactionID() {
-        return (isset($this->xmlResult['transactionID']) ? $this->xmlResult['transactionID'] : null);
+        return (isset($this->xmlResult['transactionID']) and is_string($this->xmlResult['transactionID'])) ? $this->xmlResult['transactionID'] : null;
     }
 
     /**
@@ -97,7 +97,7 @@ class Response
      * @return string|null
      */
     public function getTransactionRef() {
-        return (isset($this->xmlResult['transactionReferenceID']) ? $this->xmlResult['transactionReferenceID'] : null);
+        return (isset($this->xmlResult['transactionReferenceID']) and is_string($this->xmlResult['transactionReferenceID'])) ? $this->xmlResult['transactionReferenceID'] : null;
     }
 
 }
