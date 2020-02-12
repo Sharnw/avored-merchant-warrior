@@ -10,7 +10,7 @@
 
 	php artisan migrate
 
-	php artisan avored:module:install sharnw-merchant-warrior-car
+	php artisan avored:module:install sharnw-merchant-warrior-card
 
 ## Configuration
 
