@@ -2,9 +2,11 @@
 
 ### Installation
 
-	From the 'laravel-ecommerce' folder
+	git clone https://github.com/Sharnw/laravel-ecommerce
 	
-	git clone <this-repository-url> modules/sharnw/avored-merchant-warrior
+	cd laravel-commerce
+	
+	git clone https://github.com/Sharnw/avored-merchant-warrior modules/sharnw/avored-merchant-warrior
 
 	php artisan migrate
 
